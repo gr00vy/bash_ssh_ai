@@ -71,8 +71,8 @@ http://localhost:1234/v1/chat/completions
 Clone the repository:
 
 ```
-git clone https://github.com/YOURNAME/tmux-ai-assistant.git
-cd tmux-ai-assistant
+git clone https://github.com/gr00vy/bash_ssh_ai.git
+cd bash_ssh_ai
 ```
 
 Copy the configuration files:
