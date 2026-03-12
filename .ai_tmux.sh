@@ -5,8 +5,13 @@ CONTEXT_LINES=20
 # Capture last lines from tmux
 context=$(tmux capture-pane -pS -$CONTEXT_LINES)
 
-cwd=$(pwd)
-host=$(hostname)
+prompt_line=$(tmux capture-pane -p -S -5 -t "$target_pane" | tail -n1)
+
+host=$(echo "$prompt_line" | sed -n 's/.*@\([^:]*\):.*/\1/p')
+dir=$(echo "$prompt_line" | sed -n 's/.*:\([^#$]*\)[#$].*/\1/p')
+
+host=${host:-$(hostname)}
+dir=${dir:-$(pwd)}
 
 # Prompt for task
 printf "AI task: "
@@ -16,14 +21,14 @@ read -r task
 json=$(jq -n \
   --arg model "qwen2.5-coder-7b-instruct" \
   --arg host "$host" \
-  --arg cwd "$cwd" \
+  --arg dir "$dir" \
   --arg context "$context" \
   --arg task "$task" \
   '{
     model: $model,
     messages: [
       {role:"system", content:"You are a Linux assistant. Always return a single shell command. Never execute anything. Do not include explanations unless asked."},
-      {role:"user", content:("Host: \($host)\nCurrent directory: \($cwd)\nRecent terminal output:\n\($context)\nTask: \($task)")}
+      {role:"user", content:("Host: \($host)\nCurrent directory: \($dir)\nRecent terminal output:\n\($context)\nTask: \($task)")}
     ],
     temperature:0.2
   }')
