@@ -39,7 +39,19 @@ response=$(curl -s http://localhost:1234/v1/chat/completions \
   -d "$json")
 
 # Extract command
-cmd=$(echo "$response" | jq -r '.choices[0].message.content // .choices[0].text' | tr -d '\n')
+cmd=$(echo "$response" | jq -r '.choices[0].message.content // .choices[0].text')
+
+# remove <think> blocks
+cmd=$(echo "$cmd" | sed '/<think>/,/<\/think>/d')
+
+# remove markdown code fences
+cmd=$(echo "$cmd" | sed 's/```.*//g')
+
+# keep first non-empty line
+cmd=$(echo "$cmd" | sed '/^\s*$/d' | head -n1)
+
+# trim whitespace
+cmd=$(echo "$cmd" | xargs)
 
 # Send to current tmux pane
 tmux send-keys "$cmd"
